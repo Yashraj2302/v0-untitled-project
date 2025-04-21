@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LineChart } from "lucide-react"
 import { Navigation } from "@/components/navigation"
+import { MarketDataWidget } from "@/components/market-data"
 
 export default function BacktestPage() {
   const router = useRouter()
@@ -46,155 +47,159 @@ export default function BacktestPage() {
 
       <div className="absolute inset-0 z-20 flex items-center justify-center p-4 pointer-events-none">
         <div className="w-full max-w-4xl">
-          <Card className="bg-black/80 border-teal-500/30 backdrop-blur-md pointer-events-auto">
-            <CardHeader>
-              <CardTitle className="text-xl text-white flex items-center">
-                <LineChart className="mr-2 h-5 w-5 text-teal-500" />
-                Advanced Backtesting
-              </CardTitle>
-              <CardDescription className="text-gray-400">
-                Test your strategies against historical data with precision
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-gray-900/50">
-                  <TabsTrigger
-                    value="performance"
-                    className="data-[state=active]:bg-teal-500 data-[state=active]:text-black"
-                  >
-                    Performance
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="trades"
-                    className="data-[state=active]:bg-teal-500 data-[state=active]:text-black"
-                  >
-                    Trades
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="metrics"
-                    className="data-[state=active]:bg-teal-500 data-[state=active]:text-black"
-                  >
-                    Metrics
-                  </TabsTrigger>
-                </TabsList>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-black/80 border-teal-500/30 backdrop-blur-md pointer-events-auto md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-xl text-white flex items-center">
+                  <LineChart className="mr-2 h-5 w-5 text-teal-500" />
+                  Advanced Backtesting
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Test your strategies against historical data with precision
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 bg-gray-900/50">
+                    <TabsTrigger
+                      value="performance"
+                      className="data-[state=active]:bg-teal-500 data-[state=active]:text-black"
+                    >
+                      Performance
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="trades"
+                      className="data-[state=active]:bg-teal-500 data-[state=active]:text-black"
+                    >
+                      Trades
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="metrics"
+                      className="data-[state=active]:bg-teal-500 data-[state=active]:text-black"
+                    >
+                      Metrics
+                    </TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="performance" className="mt-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <MetricCard title="Net Profit" value="+$12,450" positive={true} />
-                    <MetricCard title="Win Rate" value="68%" positive={true} />
-                    <MetricCard title="Drawdown" value="14%" positive={false} />
-                    <MetricCard title="Sharpe Ratio" value="1.8" positive={true} />
-                  </div>
-                  <p className="text-gray-300 mb-4">
-                    The performance tab shows the overall results of your strategy backtest. Analyze key metrics to
-                    understand how your strategy would have performed historically.
-                  </p>
-                  <Button
-                    className="bg-teal-500 hover:bg-teal-600 text-black font-bold"
-                    onClick={() => router.push("/studio")}
-                  >
-                    Optimize Strategy
-                  </Button>
-                </TabsContent>
+                  <TabsContent value="performance" className="mt-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <MetricCard title="Net Profit" value="+$12,450" positive={true} />
+                      <MetricCard title="Win Rate" value="68%" positive={true} />
+                      <MetricCard title="Drawdown" value="14%" positive={false} />
+                      <MetricCard title="Sharpe Ratio" value="1.8" positive={true} />
+                    </div>
+                    <p className="text-gray-300 mb-4">
+                      The performance tab shows the overall results of your strategy backtest. Analyze key metrics to
+                      understand how your strategy would have performed historically.
+                    </p>
+                    <Button
+                      className="bg-teal-500 hover:bg-teal-600 text-black font-bold"
+                      onClick={() => router.push("/studio")}
+                    >
+                      Optimize Strategy
+                    </Button>
+                  </TabsContent>
 
-                <TabsContent value="trades" className="mt-4">
-                  <div className="bg-gray-900/50 rounded-lg p-4 mb-4">
-                    <div className="space-y-3">
-                      <TradeRow
-                        date="2023-04-15"
-                        symbol="BTC/USD"
-                        type="BUY"
-                        price="$28,450"
-                        result="+$1,240"
-                        positive={true}
-                      />
-                      <TradeRow
-                        date="2023-04-18"
-                        symbol="ETH/USD"
-                        type="SELL"
-                        price="$1,950"
-                        result="+$320"
-                        positive={true}
-                      />
-                      <TradeRow
-                        date="2023-04-22"
-                        symbol="AAPL"
-                        type="BUY"
-                        price="$175.20"
-                        result="-$420"
-                        positive={false}
-                      />
-                      <TradeRow
-                        date="2023-04-25"
-                        symbol="TSLA"
-                        type="SELL"
-                        price="$185.40"
-                        result="+$850"
-                        positive={true}
-                      />
+                  <TabsContent value="trades" className="mt-4">
+                    <div className="bg-gray-900/50 rounded-lg p-4 mb-4">
+                      <div className="space-y-3">
+                        <TradeRow
+                          date="2023-04-15"
+                          symbol="BTC/USD"
+                          type="BUY"
+                          price="$28,450"
+                          result="+$1,240"
+                          positive={true}
+                        />
+                        <TradeRow
+                          date="2023-04-18"
+                          symbol="ETH/USD"
+                          type="SELL"
+                          price="$1,950"
+                          result="+$320"
+                          positive={true}
+                        />
+                        <TradeRow
+                          date="2023-04-22"
+                          symbol="AAPL"
+                          type="BUY"
+                          price="$175.20"
+                          result="-$420"
+                          positive={false}
+                        />
+                        <TradeRow
+                          date="2023-04-25"
+                          symbol="TSLA"
+                          type="SELL"
+                          price="$185.40"
+                          result="+$850"
+                          positive={true}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <Button variant="outline" className="border-teal-500 text-teal-500 hover:bg-teal-900/20">
-                    Export Trade History
-                  </Button>
-                </TabsContent>
+                    <Button variant="outline" className="border-teal-500 text-teal-500 hover:bg-teal-900/20">
+                      Export Trade History
+                    </Button>
+                  </TabsContent>
 
-                <TabsContent value="metrics" className="mt-4">
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-gray-900/50 rounded-lg p-4">
-                      <h3 className="text-white font-medium mb-2">Risk Metrics</h3>
-                      <ul className="space-y-2 text-gray-300 text-sm">
-                        <li className="flex justify-between">
-                          <span>Max Drawdown</span>
-                          <span>14%</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span>Volatility</span>
-                          <span>18%</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span>Sortino Ratio</span>
-                          <span>1.6</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span>Calmar Ratio</span>
-                          <span>2.1</span>
-                        </li>
-                      </ul>
+                  <TabsContent value="metrics" className="mt-4">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-gray-900/50 rounded-lg p-4">
+                        <h3 className="text-white font-medium mb-2">Risk Metrics</h3>
+                        <ul className="space-y-2 text-gray-300 text-sm">
+                          <li className="flex justify-between">
+                            <span>Max Drawdown</span>
+                            <span>14%</span>
+                          </li>
+                          <li className="flex justify-between">
+                            <span>Volatility</span>
+                            <span>18%</span>
+                          </li>
+                          <li className="flex justify-between">
+                            <span>Sortino Ratio</span>
+                            <span>1.6</span>
+                          </li>
+                          <li className="flex justify-between">
+                            <span>Calmar Ratio</span>
+                            <span>2.1</span>
+                          </li>
+                        </ul>
+                      </div>
+                      <div className="bg-gray-900/50 rounded-lg p-4">
+                        <h3 className="text-white font-medium mb-2">Performance Metrics</h3>
+                        <ul className="space-y-2 text-gray-300 text-sm">
+                          <li className="flex justify-between">
+                            <span>Total Trades</span>
+                            <span>124</span>
+                          </li>
+                          <li className="flex justify-between">
+                            <span>Win/Loss Ratio</span>
+                            <span>2.1</span>
+                          </li>
+                          <li className="flex justify-between">
+                            <span>Avg. Holding Time</span>
+                            <span>3.2 days</span>
+                          </li>
+                          <li className="flex justify-between">
+                            <span>Profit Factor</span>
+                            <span>1.8</span>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
-                    <div className="bg-gray-900/50 rounded-lg p-4">
-                      <h3 className="text-white font-medium mb-2">Performance Metrics</h3>
-                      <ul className="space-y-2 text-gray-300 text-sm">
-                        <li className="flex justify-between">
-                          <span>Total Trades</span>
-                          <span>124</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span>Win/Loss Ratio</span>
-                          <span>2.1</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span>Avg. Holding Time</span>
-                          <span>3.2 days</span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span>Profit Factor</span>
-                          <span>1.8</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  <Button
-                    className="bg-teal-500 hover:bg-teal-600 text-black font-bold"
-                    onClick={() => router.push("/community")}
-                  >
-                    Compare with Community
-                  </Button>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+                    <Button
+                      className="bg-teal-500 hover:bg-teal-600 text-black font-bold"
+                      onClick={() => router.push("/community")}
+                    >
+                      Compare with Community
+                    </Button>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            <MarketDataWidget />
+          </div>
         </div>
       </div>
     </main>

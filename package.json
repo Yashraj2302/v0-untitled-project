@@ -65,7 +65,10 @@
     "react-native": "latest",
     "three": "latest",
     "@react-three/fiber": "latest",
-    "@react-three/drei": "latest"
+    "@react-three/drei": "latest",
+    "ai": "latest",
+    "@ai-sdk/openai": "latest",
+    "crypto": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

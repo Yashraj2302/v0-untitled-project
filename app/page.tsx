@@ -51,9 +51,9 @@ export default function Home() {
                 <Button
                   variant="outline"
                   className="border-teal-500 text-teal-500 hover:bg-teal-900/20 px-8 py-6 text-lg"
-                  onClick={() => router.push("/strategy")}
+                  onClick={() => router.push("/trading")}
                 >
-                  Explore Features
+                  Try Trading Dashboard
                 </Button>
               </div>
             </div>
@@ -79,6 +79,13 @@ export default function Home() {
                 onClick={() => router.push("/backtest")}
               >
                 Backtest
+              </Button>
+              <Button
+                variant="link"
+                className="text-white hover:text-teal-400 pointer-events-auto"
+                onClick={() => router.push("/trading")}
+              >
+                Trading
               </Button>
               <Button
                 variant="link"

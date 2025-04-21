@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart2, ChevronDown, Code, Cpu, Filter, GitBranch, Play, Plus, Save, Settings, Sliders } from "lucide-react"
 import { Navigation } from "@/components/navigation"
+import { AiAssistant } from "@/components/ai-assistant"
 
 export default function StudioPage() {
   const router = useRouter()
@@ -42,6 +43,7 @@ export default function StudioPage() {
       </div>
 
       <Navigation />
+      <AiAssistant />
 
       <div className="absolute inset-0 z-20 flex flex-col p-4 pointer-events-none">
         <div className="flex justify-between items-center mb-4 pointer-events-auto">
