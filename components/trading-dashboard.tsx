@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { getMarketData, getHistoricalData } from "@/lib/binance"
-import { getAiStrategyAdvice } from "@/lib/openai"
+import { getAiStrategyAdvice, getMockStrategyAdvice } from "@/lib/openai"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface MarketData {
   symbol: string
@@ -36,6 +37,7 @@ export function TradingDashboard() {
   const [aiAdvice, setAiAdvice] = useState("")
   const [aiLoading, setAiLoading] = useState(false)
   const [marketCondition, setMarketCondition] = useState("")
+  const [error, setError] = useState("")
 
   const fetchMarketData = async () => {
     try {
@@ -63,12 +65,25 @@ export function TradingDashboard() {
     if (!marketCondition.trim()) return
 
     setAiLoading(true)
+    setError("")
     try {
       const advice = await getAiStrategyAdvice(marketCondition)
-      setAiAdvice(advice)
+
+      // Check if the response indicates a missing API key
+      if (advice.includes("API key")) {
+        setError("OpenAI API key is missing. Using mock responses instead.")
+        // Use mock advice as fallback
+        const mockAdvice = await getMockStrategyAdvice(marketCondition)
+        setAiAdvice(mockAdvice)
+      } else {
+        setAiAdvice(advice)
+      }
     } catch (error) {
       console.error("Error getting AI advice:", error)
-      setAiAdvice("Sorry, I encountered an error. Please try again later.")
+      setError("Error connecting to AI service. Using mock responses instead.")
+      // Use mock advice as fallback
+      const mockAdvice = await getMockStrategyAdvice(marketCondition)
+      setAiAdvice(mockAdvice)
     } finally {
       setAiLoading(false)
     }
@@ -222,6 +237,13 @@ export function TradingDashboard() {
           <CardDescription className="text-gray-400">Get AI-powered trading strategy suggestions</CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert className="mb-4 bg-yellow-900/20 border-yellow-800 text-yellow-400">
+              <AlertTitle>API Key Missing</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-gray-300 block mb-2">

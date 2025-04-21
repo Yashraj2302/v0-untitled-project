@@ -66,9 +66,9 @@
     "three": "latest",
     "@react-three/fiber": "latest",
     "@react-three/drei": "latest",
+    "crypto": "latest",
     "ai": "latest",
-    "@ai-sdk/openai": "latest",
-    "crypto": "latest"
+    "@ai-sdk/openai": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

@@ -7,25 +7,40 @@ import { Bot, Send, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { getAiStrategyAdvice } from "@/lib/openai"
+import { getAiStrategyAdvice, getMockStrategyAdvice } from "@/lib/openai"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export function AiAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [prompt, setPrompt] = useState("")
   const [response, setResponse] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!prompt.trim()) return
 
     setIsLoading(true)
+    setError("")
     try {
       const advice = await getAiStrategyAdvice(prompt)
-      setResponse(advice)
+
+      // Check if the response indicates a missing API key
+      if (advice.includes("API key")) {
+        setError("OpenAI API key is missing. Using mock responses instead.")
+        // Use mock advice as fallback
+        const mockAdvice = await getMockStrategyAdvice(prompt)
+        setResponse(mockAdvice)
+      } else {
+        setResponse(advice)
+      }
     } catch (error) {
       console.error("Error getting AI advice:", error)
-      setResponse("Sorry, I encountered an error. Please try again later.")
+      setError("Error connecting to AI service. Using mock responses instead.")
+      // Use mock advice as fallback
+      const mockAdvice = await getMockStrategyAdvice(prompt)
+      setResponse(mockAdvice)
     } finally {
       setIsLoading(false)
     }
@@ -52,6 +67,13 @@ export function AiAssistant() {
             </Button>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert className="mb-4 bg-yellow-900/20 border-yellow-800 text-yellow-400">
+                <AlertTitle>API Key Missing</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <Textarea
                 placeholder="Describe market conditions or ask for strategy advice..."
