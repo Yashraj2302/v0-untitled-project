@@ -19,6 +19,7 @@ export function AiAssistant() {
   const [errorType, setErrorType] = useState<"api_key" | "quota" | "general" | "">("")
   const [usingMockResponse, setUsingMockResponse] = useState(false)
 
+  // Update the handleSubmit function to handle the special error codes
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!prompt.trim()) return
@@ -31,23 +32,27 @@ export function AiAssistant() {
     try {
       const advice = await getAiStrategyAdvice(prompt)
 
-      // Check for specific error types
-      if (advice.startsWith("QUOTA_EXCEEDED:")) {
-        setError(advice.replace("QUOTA_EXCEEDED: ", ""))
+      // Check for special error codes
+      if (advice === "__QUOTA_EXCEEDED__") {
+        setError(
+          "Your OpenAI API key has reached its quota limit. Please check your billing details or use a different API key.",
+        )
         setErrorType("quota")
         setUsingMockResponse(true)
         // Use mock advice as fallback
         const mockAdvice = await getMockStrategyAdvice(prompt)
         setResponse(mockAdvice)
-      } else if (advice.startsWith("API_KEY_ERROR:")) {
-        setError(advice.replace("API_KEY_ERROR: ", ""))
+      } else if (advice === "__API_KEY_ERROR__") {
+        setError(
+          "OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables.",
+        )
         setErrorType("api_key")
         setUsingMockResponse(true)
         // Use mock advice as fallback
         const mockAdvice = await getMockStrategyAdvice(prompt)
         setResponse(mockAdvice)
-      } else if (advice.startsWith("ERROR:")) {
-        setError(advice.replace("ERROR: ", ""))
+      } else if (advice === "__GENERAL_ERROR__") {
+        setError("Unable to generate strategy advice at this time. Please try again later.")
         setErrorType("general")
         setUsingMockResponse(true)
         // Use mock advice as fallback
@@ -56,6 +61,7 @@ export function AiAssistant() {
       } else {
         // Normal response
         setResponse(advice)
+        setUsingMockResponse(false)
       }
     } catch (error) {
       console.error("Error getting AI advice:", error)

@@ -6,6 +6,7 @@ import { openai } from "@ai-sdk/openai"
 // Check if OpenAI API key is available
 const isOpenAIConfigured = !!process.env.OPENAI_API_KEY
 
+// Update the getAiStrategyAdvice function to better handle quota errors
 export async function getAiStrategyAdvice(marketCondition: string, currentStrategy?: string): Promise<string> {
   try {
     // Check if OpenAI API key is configured
@@ -13,38 +14,52 @@ export async function getAiStrategyAdvice(marketCondition: string, currentStrate
       return "OpenAI API key is not configured. Please add the OPENAI_API_KEY environment variable to enable AI-powered strategy advice."
     }
 
-    const { text } = await generateText({
-      model: openai("gpt-4o"),
-      prompt: `
-        As an algorithmic trading expert, provide advice for a trading strategy based on the following market conditions:
-        ${marketCondition}
-        
-        ${currentStrategy ? `The current strategy is: ${currentStrategy}` : ""}
-        
-        Provide specific recommendations for indicators, entry/exit conditions, and risk management parameters.
-        Format your response in a clear, concise manner that can be easily understood by traders.
-      `,
-      system:
-        "You are an expert algorithmic trading assistant for AlgoSensei, a no-code trading strategy builder platform. Provide professional, accurate, and actionable trading strategy advice.",
-    })
+    try {
+      const { text } = await generateText({
+        model: openai("gpt-4o"),
+        prompt: `
+          As an algorithmic trading expert, provide advice for a trading strategy based on the following market conditions:
+          ${marketCondition}
+          
+          ${currentStrategy ? `The current strategy is: ${currentStrategy}` : ""}
+          
+          Provide specific recommendations for indicators, entry/exit conditions, and risk management parameters.
+          Format your response in a clear, concise manner that can be easily understood by traders.
+        `,
+        system:
+          "You are an expert algorithmic trading assistant for AlgoSensei, a no-code trading strategy builder platform. Provide professional, accurate, and actionable trading strategy advice.",
+      })
 
-    return text
+      return text
+    } catch (apiError) {
+      console.error("OpenAI API Error:", apiError)
+
+      // Check for quota exceeded error specifically
+      if (
+        apiError.message &&
+        (apiError.message.includes("quota") ||
+          apiError.message.includes("exceeded") ||
+          apiError.message.includes("billing") ||
+          apiError.message.includes("rate limit"))
+      ) {
+        console.log("Quota exceeded, falling back to mock response")
+        return "__QUOTA_EXCEEDED__"
+      }
+
+      // Other API errors
+      if (apiError.message && apiError.message.includes("API key")) {
+        return "__API_KEY_ERROR__"
+      }
+
+      throw apiError // Re-throw for general error handling
+    }
   } catch (error) {
     console.error("Error getting AI strategy advice:", error)
-
-    // Check for quota exceeded error
-    if (error.message?.includes("quota") || error.message?.includes("exceeded") || error.message?.includes("billing")) {
-      return "QUOTA_EXCEEDED: Your OpenAI API key has reached its quota limit. Please check your billing details or use a different API key."
-    }
-
-    if (error.message?.includes("API key")) {
-      return "API_KEY_ERROR: OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables."
-    }
-
-    return "ERROR: Unable to generate strategy advice at this time. Please try again later."
+    return "__GENERAL_ERROR__"
   }
 }
 
+// Similarly update the analyzeBacktestResults function
 export async function analyzeBacktestResults(results: string): Promise<string> {
   try {
     // Check if OpenAI API key is configured
@@ -52,36 +67,48 @@ export async function analyzeBacktestResults(results: string): Promise<string> {
       return "OpenAI API key is not configured. Please add the OPENAI_API_KEY environment variable to enable AI-powered analysis."
     }
 
-    const { text } = await generateText({
-      model: openai("gpt-4o"),
-      prompt: `
-        Analyze the following backtest results and provide insights and optimization suggestions:
-        ${results}
-        
-        Include analysis of:
-        1. Overall performance metrics
-        2. Risk-adjusted returns
-        3. Potential weaknesses in the strategy
-        4. Specific optimization suggestions
-      `,
-      system:
-        "You are an expert algorithmic trading assistant for AlgoSensei. Provide professional, data-driven analysis of backtest results with actionable optimization suggestions.",
-    })
+    try {
+      const { text } = await generateText({
+        model: openai("gpt-4o"),
+        prompt: `
+          Analyze the following backtest results and provide insights and optimization suggestions:
+          ${results}
+          
+          Include analysis of:
+          1. Overall performance metrics
+          2. Risk-adjusted returns
+          3. Potential weaknesses in the strategy
+          4. Specific optimization suggestions
+        `,
+        system:
+          "You are an expert algorithmic trading assistant for AlgoSensei. Provide professional, data-driven analysis of backtest results with actionable optimization suggestions.",
+      })
 
-    return text
+      return text
+    } catch (apiError) {
+      console.error("OpenAI API Error:", apiError)
+
+      // Check for quota exceeded error specifically
+      if (
+        apiError.message &&
+        (apiError.message.includes("quota") ||
+          apiError.message.includes("exceeded") ||
+          apiError.message.includes("billing") ||
+          apiError.message.includes("rate limit"))
+      ) {
+        return "__QUOTA_EXCEEDED__"
+      }
+
+      // Other API errors
+      if (apiError.message && apiError.message.includes("API key")) {
+        return "__API_KEY_ERROR__"
+      }
+
+      throw apiError // Re-throw for general error handling
+    }
   } catch (error) {
     console.error("Error analyzing backtest results:", error)
-
-    // Check for quota exceeded error
-    if (error.message?.includes("quota") || error.message?.includes("exceeded") || error.message?.includes("billing")) {
-      return "QUOTA_EXCEEDED: Your OpenAI API key has reached its quota limit. Please check your billing details or use a different API key."
-    }
-
-    if (error.message?.includes("API key")) {
-      return "API_KEY_ERROR: OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables."
-    }
-
-    return "ERROR: Unable to analyze backtest results at this time. Please try again later."
+    return "__GENERAL_ERROR__"
   }
 }
 

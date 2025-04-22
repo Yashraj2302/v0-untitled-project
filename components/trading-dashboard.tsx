@@ -39,6 +39,7 @@ export function TradingDashboard() {
   const [marketCondition, setMarketCondition] = useState("")
   const [error, setError] = useState("")
   const [errorType, setErrorType] = useState<"api_key" | "quota" | "general" | "">("")
+  const [usingMockResponse, setUsingMockResponse] = useState(false)
 
   const fetchMarketData = async () => {
     try {
@@ -62,6 +63,7 @@ export function TradingDashboard() {
     }
   }
 
+  // Update the getAiAdvice function to handle the special error codes
   const getAiAdvice = async () => {
     if (!marketCondition.trim()) return
 
@@ -72,28 +74,36 @@ export function TradingDashboard() {
     try {
       const advice = await getAiStrategyAdvice(marketCondition)
 
-      // Check for specific error types
-      if (advice.startsWith("QUOTA_EXCEEDED:")) {
-        setError(advice.replace("QUOTA_EXCEEDED: ", ""))
+      // Check for special error codes
+      if (advice === "__QUOTA_EXCEEDED__") {
+        setError(
+          "Your OpenAI API key has reached its quota limit. Please check your billing details or use a different API key.",
+        )
         setErrorType("quota")
         // Use mock advice as fallback
         const mockAdvice = await getMockStrategyAdvice(marketCondition)
         setAiAdvice(mockAdvice)
-      } else if (advice.startsWith("API_KEY_ERROR:")) {
-        setError(advice.replace("API_KEY_ERROR: ", ""))
+        setUsingMockResponse(true)
+      } else if (advice === "__API_KEY_ERROR__") {
+        setError(
+          "OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables.",
+        )
         setErrorType("api_key")
         // Use mock advice as fallback
         const mockAdvice = await getMockStrategyAdvice(marketCondition)
         setAiAdvice(mockAdvice)
-      } else if (advice.startsWith("ERROR:")) {
-        setError(advice.replace("ERROR: ", ""))
+        setUsingMockResponse(true)
+      } else if (advice === "__GENERAL_ERROR__") {
+        setError("Unable to generate strategy advice at this time. Please try again later.")
         setErrorType("general")
         // Use mock advice as fallback
         const mockAdvice = await getMockStrategyAdvice(marketCondition)
         setAiAdvice(mockAdvice)
+        setUsingMockResponse(true)
       } else {
         // Normal response
         setAiAdvice(advice)
+        setUsingMockResponse(false)
       }
     } catch (error) {
       console.error("Error getting AI advice:", error)
@@ -102,6 +112,7 @@ export function TradingDashboard() {
       // Use mock advice as fallback
       const mockAdvice = await getMockStrategyAdvice(marketCondition)
       setAiAdvice(mockAdvice)
+      setUsingMockResponse(true)
     } finally {
       setAiLoading(false)
     }
@@ -303,10 +314,10 @@ export function TradingDashboard() {
 
             {aiAdvice && (
               <div className="mt-4 p-4 bg-gray-900/50 rounded-lg border border-teal-900/50 text-white text-sm max-h-60 overflow-y-auto">
-                <h4 className="font-medium text-teal-400 mb-2">
-                  Strategy Recommendation:
-                  {errorType === "quota" && <span className="ml-2 text-xs text-yellow-500">(Mock Response)</span>}
-                </h4>
+                <div className="flex items-center mb-2">
+                  <h4 className="font-medium text-teal-400">Strategy Recommendation:</h4>
+                  {usingMockResponse && <span className="ml-2 text-xs text-yellow-500">(Mock Response)</span>}
+                </div>
                 <div className="whitespace-pre-line">{aiAdvice}</div>
               </div>
             )}
