@@ -31,10 +31,17 @@ export async function getAiStrategyAdvice(marketCondition: string, currentStrate
     return text
   } catch (error) {
     console.error("Error getting AI strategy advice:", error)
-    if (error.message?.includes("API key")) {
-      return "OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables."
+
+    // Check for quota exceeded error
+    if (error.message?.includes("quota") || error.message?.includes("exceeded") || error.message?.includes("billing")) {
+      return "QUOTA_EXCEEDED: Your OpenAI API key has reached its quota limit. Please check your billing details or use a different API key."
     }
-    return "Unable to generate strategy advice at this time. Please try again later."
+
+    if (error.message?.includes("API key")) {
+      return "API_KEY_ERROR: OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables."
+    }
+
+    return "ERROR: Unable to generate strategy advice at this time. Please try again later."
   }
 }
 
@@ -64,10 +71,17 @@ export async function analyzeBacktestResults(results: string): Promise<string> {
     return text
   } catch (error) {
     console.error("Error analyzing backtest results:", error)
-    if (error.message?.includes("API key")) {
-      return "OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables."
+
+    // Check for quota exceeded error
+    if (error.message?.includes("quota") || error.message?.includes("exceeded") || error.message?.includes("billing")) {
+      return "QUOTA_EXCEEDED: Your OpenAI API key has reached its quota limit. Please check your billing details or use a different API key."
     }
-    return "Unable to analyze backtest results at this time. Please try again later."
+
+    if (error.message?.includes("API key")) {
+      return "API_KEY_ERROR: OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables."
+    }
+
+    return "ERROR: Unable to analyze backtest results at this time. Please try again later."
   }
 }
 
