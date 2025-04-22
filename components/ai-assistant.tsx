@@ -19,7 +19,7 @@ export function AiAssistant() {
   const [errorType, setErrorType] = useState<"api_key" | "quota" | "general" | "">("")
   const [usingMockResponse, setUsingMockResponse] = useState(false)
 
-  // Update the handleSubmit function to handle the special error codes
+  // Update the handleSubmit function to work with the new API response format
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!prompt.trim()) return
@@ -30,47 +30,42 @@ export function AiAssistant() {
     setUsingMockResponse(false)
 
     try {
-      const advice = await getAiStrategyAdvice(prompt)
+      // Get advice with the new response format
+      const result = await getAiStrategyAdvice(prompt)
 
-      // Check for special error codes
-      if (advice === "__QUOTA_EXCEEDED__") {
-        setError(
-          "Your OpenAI API key has reached its quota limit. Please check your billing details or use a different API key.",
-        )
-        setErrorType("quota")
-        setUsingMockResponse(true)
-        // Use mock advice as fallback
-        const mockAdvice = await getMockStrategyAdvice(prompt)
-        setResponse(mockAdvice)
-      } else if (advice === "__API_KEY_ERROR__") {
-        setError(
-          "OpenAI API key is missing or invalid. Please add a valid OPENAI_API_KEY to your environment variables.",
-        )
-        setErrorType("api_key")
-        setUsingMockResponse(true)
-        // Use mock advice as fallback
-        const mockAdvice = await getMockStrategyAdvice(prompt)
-        setResponse(mockAdvice)
-      } else if (advice === "__GENERAL_ERROR__") {
-        setError("Unable to generate strategy advice at this time. Please try again later.")
-        setErrorType("general")
-        setUsingMockResponse(true)
-        // Use mock advice as fallback
-        const mockAdvice = await getMockStrategyAdvice(prompt)
-        setResponse(mockAdvice)
-      } else {
-        // Normal response
-        setResponse(advice)
-        setUsingMockResponse(false)
+      // Set the advice text
+      setResponse(result.text)
+
+      // Set error information if there is an error
+      if (result.error) {
+        setError(result.error)
+
+        // Determine error type
+        if (result.error.includes("quota")) {
+          setErrorType("quota")
+        } else if (result.error.includes("API key")) {
+          setErrorType("api_key")
+        } else {
+          setErrorType("general")
+        }
       }
+
+      // Set whether we're using a mock response
+      setUsingMockResponse(result.usingMock)
     } catch (error) {
       console.error("Error getting AI advice:", error)
       setError("Error connecting to AI service. Using mock responses instead.")
       setErrorType("general")
-      setUsingMockResponse(true)
-      // Use mock advice as fallback
-      const mockAdvice = await getMockStrategyAdvice(prompt)
-      setResponse(mockAdvice)
+
+      // Fallback to mock response in case of unexpected errors
+      try {
+        const mockAdvice = await getMockStrategyAdvice(prompt)
+        setResponse(mockAdvice)
+        setUsingMockResponse(true)
+      } catch (mockError) {
+        console.error("Error getting mock advice:", mockError)
+        setResponse("Unable to generate advice at this time. Please try again later.")
+      }
     } finally {
       setIsLoading(false)
     }
